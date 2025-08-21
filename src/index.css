@@ -1,0 +1,186 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 基础样式重置和自定义 */
+@layer base {
+  * {
+    @apply box-border;
+  }
+  
+  html {
+    @apply text-neutral-900;
+  }
+  
+  body {
+    @apply bg-neutral-50 font-sans antialiased;
+    margin: 0;
+    line-height: 1.6;
+  }
+  
+  /* 滚动条样式 */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-neutral-100;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-neutral-300 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-neutral-400;
+  }
+}
+
+/* 组件样式 */
+@layer components {
+  /* 小红书风格按钮 */
+  .btn-primary {
+    @apply bg-primary-500 text-white px-6 py-3 rounded-xl font-medium;
+    @apply hover:bg-primary-600 active:bg-primary-700;
+    @apply transition-all duration-200 ease-in-out;
+    @apply shadow-soft hover:shadow-card;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary-300 focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-neutral-700 px-6 py-3 rounded-xl font-medium border border-neutral-200;
+    @apply hover:bg-neutral-50 hover:border-neutral-300;
+    @apply transition-all duration-200 ease-in-out;
+    @apply shadow-soft hover:shadow-card;
+    @apply focus:outline-none focus:ring-2 focus:ring-neutral-300 focus:ring-offset-2;
+  }
+  
+  .btn-danger {
+    @apply bg-red-500 text-white px-6 py-3 rounded-xl font-medium;
+    @apply hover:bg-red-600 active:bg-red-700;
+    @apply transition-all duration-200 ease-in-out;
+    @apply shadow-soft hover:shadow-card;
+    @apply focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2;
+  }
+  
+  /* 小红书风格卡片 */
+  .card {
+    @apply bg-white rounded-2xl p-6 shadow-card;
+    @apply border border-neutral-100;
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  .card-hover {
+    @apply hover:shadow-float hover:-translate-y-1;
+  }
+  
+  /* 小红书风格输入框 */
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border-0 bg-neutral-100;
+    @apply focus:bg-white focus:ring-2 focus:ring-primary-300;
+    @apply transition-all duration-200 ease-in-out;
+    @apply text-neutral-900 placeholder-neutral-500;
+  }
+  
+  .input-field-bordered {
+    @apply w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white;
+    @apply focus:border-primary-300 focus:ring-2 focus:ring-primary-300;
+    @apply transition-all duration-200 ease-in-out;
+    @apply text-neutral-900 placeholder-neutral-500;
+  }
+  
+  /* 状态标签 */
+  .status-active {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply bg-accent-100 text-accent-800;
+  }
+  
+  .status-inactive {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply bg-neutral-100 text-neutral-600;
+  }
+  
+  .status-error {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply bg-red-100 text-red-800;
+  }
+  
+  /* 小红书风格 Modal */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 z-50;
+    @apply flex items-center justify-center p-4;
+    backdrop-filter: blur(4px);
+  }
+  
+  .modal-content {
+    @apply bg-white rounded-3xl p-6 max-w-md w-full;
+    @apply shadow-float animate-scale-in;
+  }
+  
+  /* 小红书风格 Toast */
+  .toast {
+    @apply fixed top-4 right-4 z-50;
+    @apply bg-white rounded-xl p-4 shadow-float;
+    @apply border border-neutral-200;
+    @apply animate-slide-up;
+  }
+  
+  .toast-success {
+    @apply border-accent-200 bg-accent-50;
+  }
+  
+  .toast-error {
+    @apply border-red-200 bg-red-50;
+  }
+  
+  .toast-warning {
+    @apply border-secondary-200 bg-secondary-50;
+  }
+}
+
+/* 工具类 */
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #FF2442 0%, #FF6B6B 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #FF2442 0%, #FF6B6B 100%);
+  }
+  
+  .bg-gradient-soft {
+    background: linear-gradient(135deg, #FDFCFB 0%, #FFFFFF 100%);
+  }
+  
+  .backdrop-blur-sm {
+    backdrop-filter: blur(4px);
+  }
+  
+  .backdrop-blur {
+    backdrop-filter: blur(8px);
+  }
+  
+  /* 自定义动画 */
+  .animate-bounce-soft {
+    animation: bounce-soft 2s infinite;
+  }
+  
+  @keyframes bounce-soft {
+    0%, 20%, 53%, 80%, 100% {
+      transform: translate3d(0,0,0);
+    }
+    40%, 43% {
+      transform: translate3d(0, -8px, 0);
+    }
+    70% {
+      transform: translate3d(0, -4px, 0);
+    }
+    90% {
+      transform: translate3d(0, -2px, 0);
+    }
+  }
+}
