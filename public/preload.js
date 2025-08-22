@@ -8,6 +8,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   deleteApiSource: (sourceId) => ipcRenderer.invoke('delete-api-source', sourceId),
   switchApiSource: (sourceId) => ipcRenderer.invoke('switch-api-source', sourceId),
   testApiConnection: (sourceData) => ipcRenderer.invoke('test-api-connection', sourceData),
+  queryModels: (sourceData) => ipcRenderer.invoke('query-models', sourceData),
+  verifyEnvironmentVariables: () => ipcRenderer.invoke('verify-environment-variables'),
   
   // 安全相关
   lockApp: () => ipcRenderer.invoke('lock-app'),

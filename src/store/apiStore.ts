@@ -1,14 +1,42 @@
 import { create } from 'zustand';
 
+// Add ApiSourceData interface to match the one in index.tsx
+interface ApiSourceData {
+  id?: number;
+  name: string;
+  apiKey: string;
+  api_base: string;
+  model?: string;
+  is_default: boolean;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface ApiSource {
   id?: number;
   name: string;
   apiKey: string;
   api_base: string;
+  model?: string;
   is_default: boolean;
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
+}
+
+// 模型相关接口
+export interface ModelInfo {
+  id: string;
+  name: string;
+  displayName: string;
+}
+
+export interface QueryModelsResult {
+  success: boolean;
+  message: string;
+  models: ModelInfo[];
+  isDefault?: boolean;
 }
 
 interface ApiState {
@@ -32,6 +60,7 @@ interface ApiState {
   deleteSource: (id: number) => Promise<void>;
   switchToSource: (id: number) => Promise<void>;
   testConnection: (source: ApiSource) => Promise<{ success: boolean; message: string }>;
+  queryModels: (source: ApiSource) => Promise<QueryModelsResult>;
 }
 
 export const useApiStore = create<ApiState>((set, get) => ({
@@ -69,9 +98,20 @@ export const useApiStore = create<ApiState>((set, get) => ({
         const sources = await window.electronAPI.getApiSources();
         const activeSource = sources.find(source => source.is_active) || null;
         
+        // Convert ApiSourceData to ApiSource by ensuring is_active is boolean
+        const convertedSources: ApiSource[] = sources.map(source => ({
+          ...source,
+          is_active: source.is_active ?? false
+        }));
+        
+        const convertedActiveSource: ApiSource | null = activeSource ? {
+          ...activeSource,
+          is_active: activeSource.is_active ?? false
+        } : null;
+        
         set({ 
-          sources, 
-          activeSource,
+          sources: convertedSources, 
+          activeSource: convertedActiveSource,
           isLoading: false 
         });
       } else {
@@ -91,14 +131,25 @@ export const useApiStore = create<ApiState>((set, get) => ({
       set({ isLoading: true, error: null });
       
       if (window.electronAPI) {
-        const result = await window.electronAPI.saveApiSource(source);
+        // 确保字段名正确传递给后端
+        const sourceData = {
+          id: source.id,
+          name: source.name,
+          apiKey: source.apiKey,
+          api_base: source.api_base,
+          model: source.model,
+          is_default: source.is_default
+        };
+        const result = await window.electronAPI.saveApiSource(sourceData);
         
         if (source.id) {
           // Update existing source
           get().updateSource(source.id, source);
         } else {
-          // Add new source with the returned ID
-          get().addSource({ ...source, id: result });
+          // Add new source with the returned ID - handle both number and boolean return types
+          if (typeof result === 'number') {
+            get().addSource({ ...source, id: result });
+          }
         }
         
         // Reload sources to get updated data
@@ -185,7 +236,16 @@ export const useApiStore = create<ApiState>((set, get) => ({
   testConnection: async (source) => {
     try {
       if (window.electronAPI) {
-        return await window.electronAPI.testApiConnection(source);
+        // 确保字段名正确传递给后端
+        const sourceData = {
+          name: source.name,
+          apiKey: source.apiKey,
+          api_base: source.api_base,
+          model: source.model,
+          is_default: source.is_default || false,
+          is_active: source.is_active || false
+        };
+        return await window.electronAPI.testApiConnection(sourceData);
       } else {
         throw new Error('Electron API not available');
       }
@@ -194,6 +254,32 @@ export const useApiStore = create<ApiState>((set, get) => ({
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to test connection' 
+      };
+    }
+  },
+
+  queryModels: async (source) => {
+    try {
+      if (window.electronAPI) {
+        // 确保字段名正确传递给后端
+        const sourceData = {
+          name: source.name,
+          apiKey: source.apiKey,
+          api_base: source.api_base,
+          model: source.model,
+          is_default: source.is_default || false,
+          is_active: source.is_active || false
+        };
+        return await window.electronAPI.queryModels(sourceData);
+      } else {
+        throw new Error('Electron API not available');
+      }
+    } catch (error) {
+      console.error('Failed to query models:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to query models',
+        models: []
       };
     }
   },

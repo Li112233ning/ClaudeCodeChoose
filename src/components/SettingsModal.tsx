@@ -247,7 +247,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                     <li>• 多 API 源管理</li>
                     <li>• 动态来源切换</li>
                     <li>• 加密安全存储</li>
-                    <li>• 小红书风格界面</li>
                   </ul>
                 </div>
                 <div className="space-y-3">
@@ -256,7 +255,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                     <li>• Electron + React</li>
                     <li>• TypeScript + Tailwind CSS</li>
                     <li>• SQLite + Zustand</li>
-                    <li>• Node.js Crypto</li>
                   </ul>
                 </div>
               </div>
@@ -277,7 +275,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
 
               {/* 版权信息 */}
               <div className="text-center text-sm text-neutral-500">
-                <p>© 2024 Claude Key Manager. All rights reserved.</p>
+                <p>© 2024 CC Key Manager. All rights reserved.</p>
                 <p className="mt-1">
                   Built with ❤️ for Claude API users
                 </p>

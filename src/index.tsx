@@ -9,6 +9,7 @@ interface ApiSourceData {
   name: string;
   apiKey: string;
   api_base: string;
+  model?: string;
   is_default: boolean;
   is_active?: boolean;
   created_at?: string;
@@ -24,6 +25,25 @@ declare global {
       deleteApiSource: (sourceId: number) => Promise<boolean>;
       switchApiSource: (sourceId: number) => Promise<{ success: boolean; message: string }>;
       testApiConnection: (sourceData: Partial<ApiSourceData>) => Promise<{ success: boolean; message: string }>;
+      queryModels: (sourceData: Partial<ApiSourceData>) => Promise<{
+        success: boolean;
+        message: string;
+        models: Array<{
+          id: string;
+          name: string;
+          displayName: string;
+        }>;
+        isDefault?: boolean;
+      }>;
+      verifyEnvironmentVariables: () => Promise<{
+        success: boolean;
+        variables: {
+          ANTHROPIC_AUTH_TOKEN?: string | null;
+          ANTHROPIC_BASE_URL?: string | null;
+          ANTHROPIC_MODEL?: string | null;
+        };
+        error?: string;
+      }>;
       lockApp: () => Promise<void>;
       unlockApp: (password: string) => Promise<{ success: boolean }>;
       platform: string;

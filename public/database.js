@@ -21,6 +21,7 @@ class DatabaseManager {
               name: { type: 'string' },
               api_key_encrypted: { type: 'string' },
               api_base: { type: 'string' },
+              model: { type: 'string' },
               is_default: { type: 'boolean' },
               is_active: { type: 'boolean' },
               created_at: { type: 'string' },
@@ -66,12 +67,13 @@ class DatabaseManager {
   async getAllSources() {
     const sources = this.store.get('apiSources', []);
     
-    // 解密 API keys
-    return sources.map(source => ({
+    // 解密 API keys并返回正确格式
+    const result = sources.map(source => ({
       ...source,
-      apiKey: '***hidden***', // 不在前端显示真实密钥
-      decryptedKey: this.encryption.decrypt(source.api_key_encrypted) // 仅在需要时解密
+      apiKey: this.encryption.decrypt(source.api_key_encrypted) // 返回真实密钥供前端使用
     }));
+    
+    return result;
   }
 
   async getSourceById(id) {
@@ -88,7 +90,7 @@ class DatabaseManager {
   }
 
   async saveSource(sourceData) {
-    const { id, name, apiKey, apiBase, isDefault } = sourceData;
+    const { id, name, apiKey, api_base, model, is_default } = sourceData;
     
     try {
       // 加密 API Key
@@ -104,14 +106,15 @@ class DatabaseManager {
             ...sources[index],
             name,
             api_key_encrypted: encryptedKey,
-            api_base: apiBase,
-            is_default: isDefault,
+            api_base: api_base,
+            model: model,
+            is_default: is_default,
             updated_at: now
           };
         }
       } else {
         // 创建新源
-        if (isDefault) {
+        if (is_default) {
           // 如果设置为默认，先清除其他默认设置
           sources.forEach(s => s.is_default = false);
         }
@@ -121,8 +124,9 @@ class DatabaseManager {
           id: nextId,
           name,
           api_key_encrypted: encryptedKey,
-          api_base: apiBase,
-          is_default: isDefault,
+          api_base: api_base,
+          model: model,
+          is_default: is_default,
           is_active: false,
           created_at: now,
           updated_at: now

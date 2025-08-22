@@ -27,9 +27,6 @@ const Header: React.FC<HeaderProps> = ({
                 <h1 className="text-xl font-bold text-neutral-900">
                   Claude Key Manager
                 </h1>
-                <p className="text-sm text-neutral-500">
-                  安全 · 简洁 · 高效
-                </p>
               </div>
             </div>
           </div>
