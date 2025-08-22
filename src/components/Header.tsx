@@ -1,17 +1,15 @@
 import React from 'react';
-import { Plus, Settings, Shield, Zap } from 'lucide-react';
+import { Plus, Shield, Zap } from 'lucide-react';
 import { ApiSource } from '../store/apiStore';
 
 interface HeaderProps {
   activeSource: ApiSource | null;
   onAddSource: () => void;
-  onOpenSettings: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
   activeSource, 
-  onAddSource, 
-  onOpenSettings 
+  onAddSource
 }) => {
   return (
     <header className="bg-white border-b border-neutral-200 sticky top-0 z-30">
@@ -59,14 +57,6 @@ const Header: React.FC<HeaderProps> = ({
             >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">添加 API 源</span>
-            </button>
-            
-            <button
-              onClick={onOpenSettings}
-              className="btn-secondary flex items-center space-x-2"
-            >
-              <Settings className="w-4 h-4" />
-              <span className="hidden sm:inline">设置</span>
             </button>
           </div>
         </div>

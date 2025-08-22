@@ -3,7 +3,6 @@ import { useApiStore, ApiSource } from './store/apiStore';
 import Header from './components/Header';
 import SourceList from './components/SourceList';
 import AddSourceModal from './components/AddSourceModal';
-import SettingsModal from './components/SettingsModal';
 import Toast from './components/Toast';
 import LoadingSpinner from './components/LoadingSpinner';
 import EmptyState from './components/EmptyState';
@@ -24,7 +23,6 @@ function App() {
   } = useApiStore();
   
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [editingSource, setEditingSource] = useState<ApiSource | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
@@ -98,7 +96,6 @@ function App() {
       <Header 
         activeSource={activeSource}
         onAddSource={handleAddSource}
-        onOpenSettings={() => setShowSettingsModal(true)}
       />
 
       {/* 主要内容区域 */}
@@ -142,12 +139,6 @@ function App() {
           onClose={() => setShowAddModal(false)}
           onSaved={handleSourceSaved}
           onTestConnection={handleConnectionTested}
-        />
-      )}
-
-      {showSettingsModal && (
-        <SettingsModal
-          onClose={() => setShowSettingsModal(false)}
         />
       )}
 

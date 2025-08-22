@@ -349,6 +349,59 @@ async function writeClaudeConfigFile(source) {
   }
 }
 
+ipcMain.handle('test-api-connection', async (event, sourceData) => {
+  try {
+    const { apiKey, api_base } = sourceData;
+    
+    if (!apiKey || !api_base) {
+      return { success: false, message: '缺少API密钥或地址' };
+    }
+
+    // 构建API请求URL - 使用一个简单的测试端点
+    const apiUrl = api_base.endsWith('/') ? api_base + 'v1/models' : api_base + '/v1/models';
+    console.log('测试连接URL:', apiUrl);
+    
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'Claude-Key-Manager/1.0.0'
+      },
+      timeout: 10000 // 10秒超时
+    });
+
+    if (!response.ok) {
+      console.error('API响应错误:', response.status);
+      
+      if (response.status === 401) {
+        return { success: false, message: 'API密钥无效或权限不足' };
+      } else if (response.status === 403) {
+        return { success: false, message: 'API密钥权限不足' };
+      } else if (response.status === 404) {
+        return { success: false, message: 'API地址无效' };
+      } else {
+        return { success: false, message: `连接失败: HTTP ${response.status}` };
+      }
+    }
+
+    return { success: true, message: 'API连接测试成功' };
+    
+  } catch (error) {
+    console.error('测试连接失败:', error);
+    
+    if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+      return { success: false, message: '无法连接到API服务器，请检查网络连接和API地址' };
+    } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return { success: false, message: 'API请求失败，请检查API地址格式' };
+    } else if (error.name === 'AbortError' || error.message.includes('timeout')) {
+      return { success: false, message: '连接超时，请检查网络连接' };
+    } else {
+      return { success: false, message: `连接测试失败: ${error.message}` };
+    }
+  }
+});
+
 ipcMain.handle('query-models', async (event, sourceData) => {
   try {
     const { apiKey, api_base } = sourceData;

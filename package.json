@@ -47,7 +47,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "^5.0.1",
-    "electron-store": "^8.1.0",
     "zustand": "^4.4.7",
     "@tailwindcss/forms": "^0.5.7",
     "lucide-react": "^0.303.0"
@@ -59,18 +58,13 @@
       "output": "dist"
     },
     "files": [
-      "build/**/*",
-      {
-        "from": "node_modules",
-        "to": "node_modules",
-        "filter": ["**/*"]
-      }
+      "build/**/*"
     ],
-    "mac": {
-      "category": "public.app-category.developer-tools"
-    },
     "win": {
       "target": "nsis"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools"
     },
     "linux": {
       "target": "AppImage"

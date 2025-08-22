@@ -1,46 +1,71 @@
-const Store = require('electron-store');
 const crypto = require('crypto');
 const path = require('path');
 const os = require('os');
+const fs = require('fs');
 
 class DatabaseManager {
   constructor() {
-    // 使用 electron-store 替代 SQLite
-    this.store = new Store({
-      name: 'claude-key-manager',
-      cwd: path.join(os.homedir(), '.claude-key-manager'),
-      encryptionKey: this.getMasterKey(),
-      schema: {
-        apiSources: {
-          type: 'array',
-          default: [],
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'number' },
-              name: { type: 'string' },
-              api_key_encrypted: { type: 'string' },
-              api_base: { type: 'string' },
-              model: { type: 'string' },
-              is_default: { type: 'boolean' },
-              is_active: { type: 'boolean' },
-              created_at: { type: 'string' },
-              updated_at: { type: 'string' }
-            }
-          }
-        },
-        appSettings: {
-          type: 'object',
-          default: {}
-        },
-        nextId: {
-          type: 'number',
-          default: 1
-        }
-      }
-    });
+    // 使用原生文件存储替代 electron-store
+    this.dataDir = path.join(os.homedir(), '.claude-key-manager');
+    this.dataFile = path.join(this.dataDir, 'data.json');
+    
+    // 确保数据目录存在
+    this.ensureDataDir();
+    
+    // 初始化数据
+    this.data = this.loadData();
     
     this.encryption = new EncryptionManager();
+  }
+
+  ensureDataDir() {
+    try {
+      if (!fs.existsSync(this.dataDir)) {
+        fs.mkdirSync(this.dataDir, { recursive: true, mode: 0o700 });
+      }
+    } catch (error) {
+      console.error('Failed to create data directory:', error);
+    }
+  }
+
+  loadData() {
+    try {
+      if (fs.existsSync(this.dataFile)) {
+        const data = JSON.parse(fs.readFileSync(this.dataFile, 'utf8'));
+        return {
+          apiSources: data.apiSources || [],
+          appSettings: data.appSettings || {},
+          nextId: data.nextId || 1
+        };
+      }
+    } catch (error) {
+      console.error('Failed to load data:', error);
+    }
+    
+    // 返回默认数据
+    return {
+      apiSources: [],
+      appSettings: {},
+      nextId: 1
+    };
+  }
+
+  saveData() {
+    try {
+      fs.writeFileSync(this.dataFile, JSON.stringify(this.data, null, 2), { mode: 0o600 });
+    } catch (error) {
+      console.error('Failed to save data:', error);
+      throw error;
+    }
+  }
+
+  get(key, defaultValue = null) {
+    return this.data[key] !== undefined ? this.data[key] : defaultValue;
+  }
+
+  set(key, value) {
+    this.data[key] = value;
+    this.saveData();
   }
 
   getMasterKey() {
@@ -65,7 +90,7 @@ class DatabaseManager {
   }
 
   async getAllSources() {
-    const sources = this.store.get('apiSources', []);
+    const sources = this.get('apiSources', []);
     
     // 解密 API keys并返回正确格式
     const result = sources.map(source => ({
@@ -77,7 +102,7 @@ class DatabaseManager {
   }
 
   async getSourceById(id) {
-    const sources = this.store.get('apiSources', []);
+    const sources = this.get('apiSources', []);
     const source = sources.find(s => s.id === id);
     
     if (source) {
@@ -95,7 +120,7 @@ class DatabaseManager {
     try {
       // 加密 API Key
       const encryptedKey = this.encryption.encrypt(apiKey);
-      const sources = this.store.get('apiSources', []);
+      const sources = this.get('apiSources', []);
       const now = new Date().toISOString();
       
       if (id) {
@@ -119,7 +144,7 @@ class DatabaseManager {
           sources.forEach(s => s.is_default = false);
         }
         
-        const nextId = this.store.get('nextId', 1);
+        const nextId = this.get('nextId', 1);
         const newSource = {
           id: nextId,
           name,
@@ -133,13 +158,13 @@ class DatabaseManager {
         };
         
         sources.push(newSource);
-        this.store.set('nextId', nextId + 1);
+        this.set('nextId', nextId + 1);
         
-        this.store.set('apiSources', sources);
+        this.set('apiSources', sources);
         return nextId;
       }
       
-      this.store.set('apiSources', sources);
+      this.set('apiSources', sources);
       return true;
     } catch (error) {
       console.error('Database save error:', error);
@@ -148,29 +173,29 @@ class DatabaseManager {
   }
 
   async deleteSource(id) {
-    const sources = this.store.get('apiSources', []);
+    const sources = this.get('apiSources', []);
     const filteredSources = sources.filter(s => s.id !== id);
     
     if (filteredSources.length !== sources.length) {
-      this.store.set('apiSources', filteredSources);
+      this.set('apiSources', filteredSources);
       return true;
     }
     return false;
   }
 
   async setActiveSource(id) {
-    const sources = this.store.get('apiSources', []);
+    const sources = this.get('apiSources', []);
     
     // 清除所有活跃状态并设置新的活跃源
     sources.forEach(s => {
       s.is_active = s.id === id;
     });
     
-    this.store.set('apiSources', sources);
+    this.set('apiSources', sources);
   }
 
   async getActiveSource() {
-    const sources = this.store.get('apiSources', []);
+    const sources = this.get('apiSources', []);
     const activeSource = sources.find(s => s.is_active);
     
     if (activeSource) {
@@ -183,14 +208,14 @@ class DatabaseManager {
   }
 
   async getSetting(key) {
-    const settings = this.store.get('appSettings', {});
+    const settings = this.get('appSettings', {});
     return settings[key] || null;
   }
 
   async setSetting(key, value) {
-    const settings = this.store.get('appSettings', {});
+    const settings = this.get('appSettings', {});
     settings[key] = value;
-    this.store.set('appSettings', settings);
+    this.set('appSettings', settings);
   }
 
   close() {
