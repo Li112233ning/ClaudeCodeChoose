@@ -235,7 +235,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                 </h4>
                 <p className="text-neutral-600 mb-1">版本 1.0.0</p>
                 <p className="text-sm text-neutral-500">
-                  安全 · 简洁 · 高效的 API 密钥管理工具
+                   API 密钥管理工具
                 </p>
               </div>
 

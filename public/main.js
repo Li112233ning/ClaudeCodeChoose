@@ -25,7 +25,9 @@ function createWindow() {
       nodeIntegration: false, // 安全考虑：禁用 node 集成
       contextIsolation: true, // 启用上下文隔离
       enableRemoteModule: false, // 禁用 remote 模块
-      preload: path.join(__dirname, 'preload.js'), // 预加载脚本
+      preload: isDev 
+        ? path.join(__dirname, 'preload.js')
+        : path.join(__dirname, 'preload.js'), // 预加载脚本
       webSecurity: true
     },
     icon: path.join(__dirname, 'icon.png'), // 应用图标
@@ -35,9 +37,37 @@ function createWindow() {
   });
 
   // 加载应用
-  const startUrl = isDev 
-    ? 'http://localhost:3000' 
-    : `file://${path.join(__dirname, '../build/index.html')}`;
+  let startUrl;
+  if (isDev) {
+    startUrl = 'http://localhost:3000';
+  } else {
+    // 生产环境：检查多个可能的路径
+    const possiblePaths = [
+      path.join(__dirname, '../build/index.html'),
+      path.join(__dirname, '../../build/index.html'),
+      path.join(process.resourcesPath, 'build/index.html'),
+      path.join(__dirname, 'build/index.html')
+    ];
+    
+    const fs = require('fs');
+    let indexPath = null;
+    
+    for (const possiblePath of possiblePaths) {
+      if (fs.existsSync(possiblePath)) {
+        indexPath = possiblePath;
+        console.log('Found index.html at:', indexPath);
+        break;
+      }
+    }
+    
+    if (!indexPath) {
+      console.error('Could not find index.html in any of the expected locations:', possiblePaths);
+      // 作为备用，尝试使用第一个路径
+      indexPath = possiblePaths[0];
+    }
+    
+    startUrl = `file://${indexPath}`;
+  }
   
   mainWindow.loadURL(startUrl);
 
